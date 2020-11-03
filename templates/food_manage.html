@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>식단관리</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <style>
+
+        h5 {
+            margin-top: 50px;
+            margin-left: 50px;
+        }
+
+        .wrap {
+            position: absolute;
+            margin-top: 30px;
+            margin-left: 50px;
+            width: 400px;
+        }
+
+        .save-bt {
+            margin-left: 80%;
+        }
+
+        .button {
+            width: 50px;
+            font-size: 17px;
+
+        }
+
+        .jumbo {
+            margin-left: 700px;
+            width: 500px;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+
+        });
+
+        function save_info() {
+            let name = $('#name-select').val()
+            let gender = $('#gender-select').val()
+            let height = $('#height-select').val()
+            let active = $('#active-value').val()
+
+            $.ajax({
+                type: "POST",
+                url: "/calory",
+                data: {
+                    name_give: name,
+                    gender_give: gender,
+                    height_give: height,
+                    active_give: active
+                },
+                success: function (response) { // 성공하면
+                    if (response["result"] == "success") {
+                        if (name == '' || gender == '성별' || height == "" || active == '활동지수 선택'){
+                            alert('정보를 입력해주세요!!!')
+                            return;
+                        }
+                        alert(response["msg"]);
+
+
+                        window.location.reload();
+                    }
+                }
+            })
+
+        }
+
+        // $.ajax({
+        //     type: "GET", // GET 방식으로 요청한다.
+        //     url: "https://api.manana.kr/exchange/rate.json",
+        //     data: {}, // 요청하면서 함께 줄 데이터 (GET 요청시엔 비워두세요)
+        //     success: function (response) { // 서버에서 준 결과를 response라는 변수에 담음
+        //         // console.log(response[1]['rate']) // 서버에서 준 결과를 이용해서 나머지 코드를 작성
+        //         change_info = response[1]['rate'] // 환율정보 불러와 change_info에 저장
+        //         // htmltemp = `<div class="changeMoney" id="change">change달러-원 환율 : ${change_info}</div>`
+        //         $('#change').replaceWith(change_info)
+        //     }
+        // })
+    </script>
+
+</head>
+
+<body>
+
+<h5>하루 권장 칼로리 계산을위해 아래 정보를 입력해주세요.</h5>
+<div class="wrap">
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">이름</span>
+        </div>
+        <input type="text" class="form-control" id="name-select" aria-label="Default"
+               aria-describedby="inputGroup-sizing-default">
+    </div>
+
+    <select class="custom-select custom-select-lg mb-3" id="gender-select">
+
+        <option selected>성별</option>
+        <option value="500">남자</option>
+        <option value="0">여</option>
+    </select>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">키</span>
+        </div>
+        <input type="text" class="form-control" id="height-select" aria-label="Default"
+               aria-describedby="inputGroup-sizing-default">
+    </div>
+
+
+    <select class="custom-select custom-select-lg mb-3" id="active-value">
+
+        <option selected>활동지수 선택</option>
+        <option value="25">앉아서 주로 활동</option>
+        <option value="32">규칙적인 생활로 보통의 활동</option>
+        <option value="40">평소 신체 활동이 많은 경우</option>
+    </select>
+    <div class="save-bt">
+        <button type="button" class="btn btn-success">
+            <div class="button" onclick="save_info()">저장</div>
+        </button>
+    </div>
+</div>
+
+<div class="jumbo" id="jumbobox">
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <center>
+            <h2 class="display-4" id="calory-name">권장 칼로리 정보</h2>
+            </center>
+                <p class="lead" id="calory-info"></p>
+        </div>
+    </div>
+</div>
+</div>
+
+<!--<div class="table">-->
+<!--    <table class="table">-->
+<!--        <thead class="thead-light">-->
+<!--        <tr>-->
+<!--            <th scope="col">#</th>-->
+<!--            <th scope="col">First</th>-->
+<!--            <th scope="col">Last</th>-->
+<!--            <th scope="col">Handle</th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--        <tr>-->
+<!--            <th scope="row">1</th>-->
+<!--            <td>Mark</td>-->
+<!--            <td>Otto</td>-->
+<!--            <td>@mdo</td>-->
+<!--        </tr>-->
+<!--        <tr>-->
+<!--            <th scope="row">2</th>-->
+<!--            <td>Jacob</td>-->
+<!--            <td>Thornton</td>-->
+<!--            <td>@fat</td>-->
+<!--        </tr>-->
+<!--        <tr>-->
+<!--            <th scope="row">3</th>-->
+<!--            <td>Larry</td>-->
+<!--            <td>the Bird</td>-->
+<!--            <td>@twitter</td>-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--    </table>-->
+<!--</div>-->
+
+</body>
+
+</html>

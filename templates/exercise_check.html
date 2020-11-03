@@ -2,19 +2,259 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title_sparta</title>
+    <title>운동계획 및 달성률 체크</title>
+
+    <!--    Bootstrap-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
+    <!--    java script-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+
+    <!--    // jQuery UI CSS파일 -->
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css"/>
+    <!--    // jQuery 기본 js파일-->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <!--    // jQuery UI 라이브러리 js파일-->
+    <script src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+
+
     <style>
 
-        .page_title{
-            margin-left : 30px;
-            margin-top : 50px;
+        .wrap {
+            margin-left: 30px;
+            margin-top: 50px;
         }
 
+        .input-info {
+            width: 210px;
+            padding-top: 10px;
+        }
+
+        .col-auto {
+            padding-top: 5px;
+        }
+
+        .save-bt {
+            width: 80px;
+            height: 30px;
+            /*padding-top: 3px;*/
+        }
+
+        .cal_top {
+            text-align: center;
+            font-size: 40px;
+        }
+
+        .cal {
+            text-align: center;
+        }
+
+        table.calendar {
+            border: 1px solid black;
+            display: inline-table;
+            text-align: left;
+        }
+
+        table.calendar td {
+            vertical-align: top;
+            border: 3px solid skyblue;
+
+            width: 150px;
+        }
+
+        .show-result {
+            width: 710px;
+            height: 30px;
+            margin-top: 70px;
+            margin-left: 555px;
+            margin-bottom: 100px;
+            font-size: 30px;
+
+        }
+
+        .progress {
+            width: 1050px;
+            height: 30px;
+            margin-top: 10px;
+            /*margin-left: 260px;*/
+        }
     </style>
 
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            drawCalendar();
+            initDate();
+            drawDays();
+
+            $("#movePrevMonth").on("click", function () {
+                movePrevMonth();
+            });
+            $("#moveNextMonth").on("click", function () {
+                moveNextMonth();
+            });
+        });
+
+        function saveinfo() {
+            let year_select = $('#year-select').val()
+            let month_select = $('#month-select').val()
+            let exercise_count = $('#exercise-count').val()
+
+            if (year_select == '연도 선택' || month_select == '월 선택' || exercise_count == " ") {
+                alert('정보를 입력해주세요!');
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: "/info",
+                data: {year_give: year_select, month_give: month_select, count_give: exercise_count},
+                success: function (response) { // 성공하면
+                    if (response["result"] == "success") {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    }
+                }
+            })
+
+        }
+
+
+        var today = null;
+        var year = null;
+        var month = null;
+        var firstDay = null;
+        var lastDay = null;
+        var $tdDay = null;
+        var $tdSche = null;
+
+        //calendar 그리기
+        function drawCalendar() {
+            var setTableHTML = "";
+            setTableHTML += '<table class="calendar">';
+            setTableHTML += '<tr><th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>';
+            for (var i = 0; i < 6; i++) {
+                setTableHTML += '<tr height="100">';
+                for (var j = 0; j < 7; j++) {
+                    setTableHTML += '<td style="text-overflow:ellipsis;overflow:hidden;white-space:nowrap">';
+                    setTableHTML += '    <div class="cal-day"></div>';
+                    setTableHTML += '    <div class="cal-schedule"></div>';
+                    setTableHTML += '</td>';
+                }
+                setTableHTML += '</tr>';
+            }
+            setTableHTML += '</table>';
+            $("#cal_tab").html(setTableHTML);
+        }
+
+        //날짜 초기화
+        function initDate() {
+            $tdDay = $("td div.cal-day")
+            $tdSche = $("td div.cal-schedule")
+            dayCount = 0;
+            today = new Date();
+            year = today.getFullYear();
+            month = today.getMonth() + 1;
+            firstDay = new Date(year, month - 1, 1);
+            lastDay = new Date(year, month, 0);
+        }
+
+        //calendar 날짜표시
+        function drawDays() {
+
+            $.ajax({
+                type: "GET",
+                url: "/calender",
+                data: {},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        // console.log(response['infoes'])
+                        all_info = response['infoes']
+
+                        let year = all_info[all_info.length - 1]['year'];
+                        let month = all_info[all_info.length - 1]['month']
+                        let count = all_info[all_info.length - 1]['count']
+                        // 내가 달성한 목표횟수
+                        let achievecount = 7;
+
+                        let countpercent = achievecount/count *100;
+                        countpercent = Math.round(countpercent);
+
+                        let tempyear = `<span id="cal_top_year">${year}년</span>`
+                        let tempmonth = `<span id="cal_top_month">${month}월</span>`
+
+                        $("#cal_top_year").replaceWith(tempyear);
+                        $("#cal_top_month").replaceWith(tempmonth);
+
+                        let tempcount = ` <div class="show-result" id="show-results">
+                                            <span id="show-per">2020년 4월의 목표 달성률은 ${countpercent}% 입니다.</span>
+
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${countpercent}%"
+                                                     aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>`
+
+                        $('#show-results').replaceWith(tempcount);
+
+
+                    }
+                }
+            })
+
+
+            for (var i = firstDay.getDay(); i < firstDay.getDay() + lastDay.getDate(); i++) {
+                $tdDay.eq(i).text(++dayCount);
+            }
+            for (var i = 0; i < 42; i += 7) {
+                $tdDay.eq(i).css("color", "red");
+            }
+            for (var i = 6; i < 42; i += 7) {
+                $tdDay.eq(i).css("color", "blue");
+            }
+        }
+
+        //calendar 월 이동
+        function movePrevMonth() {
+            month--;
+            if (month <= 0) {
+                month = 12;
+                year--;
+            }
+            if (month < 10) {
+                month = String("0" + month);
+            }
+            getNewInfo();
+        }
+
+        function moveNextMonth() {
+            month++;
+            if (month > 12) {
+                month = 1;
+                year++;
+            }
+            if (month < 10) {
+                month = String("0" + month);
+            }
+            getNewInfo();
+        }
+
+
+        function getNewInfo() {
+            for (var i = 0; i < 42; i++) {
+                $tdDay.eq(i).text("");
+            }
+            dayCount = 0;
+            firstDay = new Date(year, month - 1, 1);
+            lastDay = new Date(year, month, 0);
+            drawDays();
+        }
+
+    </script>
 
 
 </head>
@@ -22,13 +262,72 @@
 
 <body>
 
-<div class="page_title">
+<div class="wrap">
     <h1>운동계획 및 달성률 체크</h1>
     <p></p>
-    <h4>월과 목표하는 운동횟수를 입력해주세요.</h4>
-</div>
+    <h4>년/월과 한달동안 목표하는 운동횟수를 입력해주세요.</h4>
+    <p></p>
+
+    <div class="year-month">
+        <div class="input-info" style="float:left;">
+            <select class="custom-select custom-select-lg mb-3" id="year-select">
+
+                <option selected>연도 선택</option>
+                <option value="2020">2020년</option>
+                <option value="2021">2021년</option>
+                <option value="2022">2022년</option>
+            </select>
+
+            <div class="input-info">
+                <select class="custom-select custom-select-lg mb-3" id="month-select">
+                    <option selected>월 선택</option>
+                    <option value="1">1월</option>
+                    <option value="2">2월</option>
+                    <option value="3">3월</option>
+                    <option value="4">4월</option>
+                    <option value="5">5월</option>
+                    <option value="6">6월</option>
+                    <option value="7">7월</option>
+                    <option value="8">8월</option>
+                    <option value="9">9월</option>
+                    <option value="10">10월</option>
+                    <option value="11">11월</option>
+                    <option value="12">12월</option>
+                </select>
+            </div>
+            <div class="form-row align-items-center">
+                <div class="col-auto">
+                    <label class="sr-only" for="exercise-count">목표 운동횟수</label>
+                    <input type="text" class="form-control mb-2" id="exercise-count" placeholder="목표 운동횟수 입력">
+                    <span>※ 숫자만 입력!!</span><br>
+                    <p></p>
+
+                    <button type="button" onclick="saveinfo()" class="btn btn-success">
+                        <div class="save-bt"><span style="font-size: 23px">저장</span></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cal_top">
+        <a href="#" id="movePrevMonth"><span id="prevMonth" class="cal_tit">&lt;</span></a>
+        <span id="cal_top_year">년</span>
+        <span id="cal_top_month">월</span>
+        <a href="#" id="moveNextMonth"><span id="nextMonth" class="cal_tit">&gt;</span></a>
+    </div>
+    <div id="cal_tab" class="cal">
+    </div>
 
 
+    <div class="show-result" id="show-results">
+        <span id="show-per">2020년 4월의 목표 달성률은 100% 입니다.</span>
+
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 80%"
+                 aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
 
 </body>
 </html>
