@@ -10,8 +10,13 @@
 
     <style>
 
+        body {
+            background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQedZzOMdGnc_UHZ3li-1VJYJ1g89HjUagvOw&usqp=CAU");
+
+        }
+
         h5 {
-            margin-top: 50px;
+            margin-top: 100px;
             margin-left: 50px;
         }
 
@@ -22,7 +27,22 @@
             width: 400px;
         }
 
+        .food-management {
+            position: absolute;
+            margin-left: 50px;
+            width: 400px;
+            /*margin-bottom: 100px;*/
+        }
+
+        .food-box {
+            margin-top: 30px;
+        }
+
         .save-bt {
+            margin-left: 80%;
+        }
+
+        .menuSaveBt {
             margin-left: 80%;
         }
 
@@ -33,14 +53,28 @@
         }
 
         .jumbo {
+
             margin-left: 700px;
-            width: 500px;
+            width: 800px;
+            margin-bottom: 200px;
+        }
+
+        .jumbo2 {
+            margin-top: 30px;
+            margin-left: 700px;
+            width: 800px;
+            /*margin-bottom: 100px;*/
+        }
+
+        .lead {
+            margin-top: 30px;
+            font-size: 20px;
         }
     </style>
 
     <script>
         $(document).ready(function () {
-
+            show_calory()
         });
 
         function save_info() {
@@ -48,6 +82,16 @@
             let gender = $('#gender-select').val()
             let height = $('#height-select').val()
             let active = $('#active-value').val()
+
+
+            var height_type = /\d{3}$/;
+            if (name == '' || gender == '성별' || height == "" || active == '활동지수 선택') {
+                alert('정보를 입력해주세요!!!')
+                return;
+            } else if (!height_type.test(height)) {
+                alert('키는 숫자형식 3자리로 입력하세요!')
+                return;
+            }
 
             $.ajax({
                 type: "POST",
@@ -59,14 +103,10 @@
                     active_give: active
                 },
                 success: function (response) { // 성공하면
+
                     if (response["result"] == "success") {
-                        if (name == '' || gender == '성별' || height == "" || active == '활동지수 선택'){
-                            alert('정보를 입력해주세요!!!')
-                            return;
-                        }
+                        // 키를 숫자형식 3자리로 입력하기!!
                         alert(response["msg"]);
-
-
                         window.location.reload();
                     }
                 }
@@ -74,17 +114,130 @@
 
         }
 
-        // $.ajax({
-        //     type: "GET", // GET 방식으로 요청한다.
-        //     url: "https://api.manana.kr/exchange/rate.json",
-        //     data: {}, // 요청하면서 함께 줄 데이터 (GET 요청시엔 비워두세요)
-        //     success: function (response) { // 서버에서 준 결과를 response라는 변수에 담음
-        //         // console.log(response[1]['rate']) // 서버에서 준 결과를 이용해서 나머지 코드를 작성
-        //         change_info = response[1]['rate'] // 환율정보 불러와 change_info에 저장
-        //         // htmltemp = `<div class="changeMoney" id="change">change달러-원 환율 : ${change_info}</div>`
-        //         $('#change').replaceWith(change_info)
-        //     }
-        // })
+        function show_calory() {
+            $.ajax({
+                type: "GET", // GET 방식으로 요청한다.
+                url: "/calory",
+                data: {}, // 요청하면서 함께 줄 데이터 (GET 요청시엔 비워두세요)
+                success: function (response) { // 서버에서 준 결과를 response라는 변수에 담음
+                    // console.log(response['infoes']) // 서버에서 준 결과를 이용해서 나머지 코드를 작성
+                    all_info = response['infoes'];
+                    let height = all_info[all_info.length - 1]['height']
+                    let name = all_info[all_info.length - 1]['name']
+                    let active = all_info[all_info.length - 1]['active']
+                    let gender = all_info[all_info.length - 1]['gender']
+
+                    if (gender == 1) {
+                        resultCal = (height - 100) * 0.9 * active + 500;
+                        resultCal = Math.round(resultCal);
+                    } else {
+                        resultCal = (height - 100) * 0.9 * active;
+                        resultCal = Math.round(resultCal);
+                    }
+
+                    temphtml = `<div class="jumbo" id="jumbobox">
+                                        <div class="jumbotron jumbotron-fluid">
+                                            <div class="container">
+                                                <center>
+                                                    <h2 class="display-4" id="calory-name"> 권장 칼로리 </h2>
+                                                </center>
+                                                <p></p>
+                                                <center>
+                                                    <p class="lead" id="calory-info">
+                                                        <span style="color:black; font-size: larger; font-weight: bold">${name}</span> 님의 하루 권장 칼로리는
+                                                        <span style="color:red; font-size: larger; font-weight: bold"> ${resultCal} cal</span> 입니다.
+                                                    </p>
+                                                </center>
+                                            </div>
+                                        </div>
+                                    </div>`
+
+                    $('#jumbobox').replaceWith(temphtml);
+
+                }
+            })
+        }
+
+        function menu_info() {
+
+            let breakfast = $('#breakfast').val()
+            let lunch = $('#lunch').val()
+            let dinner = $('#dinner').val()
+
+            if (breakfast == "" || lunch == " " || dinner == "") {
+                alert('메뉴를 입력해주세요!')
+                return;
+            }
+            $.ajax({
+                type: "GET", // GET 방식으로 요청한다.
+                url: "/calory",
+                data: {}, // 요청하면서 함께 줄 데이터 (GET 요청시엔 비워두세요)
+                success: function (response) { // 서버에서 준 결과를 response라는 변수에 담음
+                    // console.log(response['infoes']) // 서버에서 준 결과를 이용해서 나머지 코드를 작성
+                    all_info = response['infoes'];
+                    let height = all_info[all_info.length - 1]['height']
+                    let name = all_info[all_info.length - 1]['name']
+                    let active = all_info[all_info.length - 1]['active']
+                    let gender = all_info[all_info.length - 1]['gender']
+
+                    if (gender == 1) {
+                        resultCal = (height - 100) * 0.9 * active + 500;
+                        resultCal = Math.round(resultCal);
+                    } else {
+                        resultCal = (height - 100) * 0.9 * active;
+                        resultCal = Math.round(resultCal);
+                    }
+
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/food",
+                        data: {breakfast_give: breakfast, lunch_give: lunch, dinner_give: dinner},
+                        success: function (response) { // 성공하면
+                            if (response["result"] == "success") {
+                                    if (response['msg'] == 1){
+                                        alert('아침 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴 이름으로 입력해주세요.')
+                                        return;
+                                    }
+                                    else if (response['msg'] == 2){
+                                        alert('점심 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴 이름으로 입력해주세요.')
+                                        return;
+                                    }
+                                    else if (response['msg'] == 3){
+                                        alert('저녁 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴 이름으로 입력해주세요.')
+                                        return;
+                                    }
+                                    // window.location.reload();
+                                    let breakfast = response['menu']['break_cal']
+                                    let lunch = response['menu']['lunch_cal']
+                                    let dinner = response['menu']['dinner_cal']
+
+                                    total = breakfast + lunch + dinner;
+                                    console.log(total);
+                                    console.log(resultCal);
+                                    if (total > resultCal) {
+                                        result = '권장칼로리대비 ' + (total - resultCal) + 'cal 만큼 많습니다.<br/>운동하셔야 겠어요!'
+                                    } else if (total < resultCal) {
+                                        result = '권장칼로리대비 ' + (resultCal - total) + 'cal 만큼 부족합니다.<br/>조금 더 섭취하세요.';
+                                    } else {
+                                        result = '권장칼로리 입니다.<br/>완벽합니다!!!'
+                                    }
+
+                                    temphtml = `<p class="lead" id="calory-compare">
+                                         <span style="font-size: 23px; font-weight: bold">${name}님의 금일 섭취한 칼로리는 ${result}</span>
+                                        </p>`
+
+                                    $('#calory-compare').replaceWith(temphtml)
+
+
+                            }
+                        }
+                    })
+                }
+            })
+        }
+
+
     </script>
 
 </head>
@@ -105,7 +258,7 @@
     <select class="custom-select custom-select-lg mb-3" id="gender-select">
 
         <option selected>성별</option>
-        <option value="500">남자</option>
+        <option value="1">남자</option>
         <option value="0">여</option>
     </select>
 
@@ -136,46 +289,58 @@
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
             <center>
-            <h2 class="display-4" id="calory-name">권장 칼로리 정보</h2>
+                <h2 class="display-4" id="calory-name">권장 칼로리 정보</h2>
             </center>
-                <p class="lead" id="calory-info"></p>
+            <p class="lead" id="calory-info"><span style="font-size: 20px"></span></p>
         </div>
     </div>
 </div>
+
+<h5>식단을 입력해 주세요.</h5>
+<div class="food-management">
+    <div class="food-box">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">아침</span>
+            </div>
+            <input type="text" class="form-control" id="breakfast" aria-label="Default"
+                   aria-describedby="inputGroup-sizing-default">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">점심</span>
+            </div>
+            <input type="text" class="form-control" id="lunch" aria-label="Default"
+                   aria-describedby="inputGroup-sizing-default">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">저녁</span>
+            </div>
+            <input type="text" class="form-control" id="dinner" aria-label="Default"
+                   aria-describedby="inputGroup-sizing-default">
+        </div>
+    </div>
+    <div class="menuSaveBt">
+        <button type="button" class="btn btn-success">
+            <div class="button" onclick="menu_info()">저장</div>
+        </button>
+    </div>
+
 </div>
 
-<!--<div class="table">-->
-<!--    <table class="table">-->
-<!--        <thead class="thead-light">-->
-<!--        <tr>-->
-<!--            <th scope="col">#</th>-->
-<!--            <th scope="col">First</th>-->
-<!--            <th scope="col">Last</th>-->
-<!--            <th scope="col">Handle</th>-->
-<!--        </tr>-->
-<!--        </thead>-->
-<!--        <tbody>-->
-<!--        <tr>-->
-<!--            <th scope="row">1</th>-->
-<!--            <td>Mark</td>-->
-<!--            <td>Otto</td>-->
-<!--            <td>@mdo</td>-->
-<!--        </tr>-->
-<!--        <tr>-->
-<!--            <th scope="row">2</th>-->
-<!--            <td>Jacob</td>-->
-<!--            <td>Thornton</td>-->
-<!--            <td>@fat</td>-->
-<!--        </tr>-->
-<!--        <tr>-->
-<!--            <th scope="row">3</th>-->
-<!--            <td>Larry</td>-->
-<!--            <td>the Bird</td>-->
-<!--            <td>@twitter</td>-->
-<!--        </tr>-->
-<!--        </tbody>-->
-<!--    </table>-->
-<!--</div>-->
+<div class="jumbo2" id="jumbobox2">
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <center>
+                <p class="lead" id="calory-compare"><span style="font-size: 20px"></span></p>
+            </center>
+        </div>
+    </div>
+</div>
+
 
 </body>
 
