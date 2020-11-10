@@ -79,16 +79,12 @@ def get_calory():
     infoes = list(db.calory.find({}, {'_id': 0}))
     return jsonify({'result': 'success', 'infoes': infoes})
 
-
 @app.route('/food', methods=['POST'])
 def get_menu():
     breakfast_receive = request.form['breakfast_give']
     lunch_receive = request.form['lunch_give']
     dinner_receive = request.form['dinner_give']
     print(breakfast_receive)
-    # if breakfast_receive == '' or lunch_receive == '' or dinner_receive == "":
-    #     msg = '메뉴를 입력해주세요!'
-    #     return jsonify({'result': 'success', 'msg': msg})
 
     breakfast = db.food.find_one({'menu': breakfast_receive}, {'_id': False})
     lunch = db.food.find_one({'menu': lunch_receive}, {'_id': False})
@@ -109,29 +105,57 @@ def get_menu():
             }
         return jsonify({'result': 'success', "menu": doc})
 
-date_list =[]
+
+# date_list =[]
 @app.route('/date', methods=['POST'])
-## 클라이언트의 post요청으로부터 key 값들을 받아와 변수에 저장
 
-
-def date():
+def date_show():
     date_receive = request.form['date_give']
     year_receive = request.form['year_give']
     month_receive = request.form['month_give']
-    # print(year_receive)
-    # print(month_receive)
-    date_list.append(date_receive)
-    doc = {
-        'year': year_receive,
-        'month': month_receive,
-        'date': date_list
-    }
-    print(doc)
-    db.date.insert_one(doc)
-    db.date.find_one({'date': breakfast_receive}, {'_id': False})
-    return jsonify(
-        {'result': 'success', "msg": '성공적으로 저장되었습니다!'})
 
+    #year_month 형식으로 변경 : 2020년 11월 -> 202011
+    year_month = int(year_receive)*100 + int(month_receive)
+    now_count = list(db.date.find({'year_month': year_month}, {'_id': False}))
+    # now_count = now_count[0]['date']
+    print(date_receive)
+
+
+    # 달력에 표시한 날짜리스트(date_list)에 타겟 날짜(date_receive) 가 없으면 리스트에 타겟날짜 추가
+    if str(date_receive) in now_count[0]['date']: ## 있으면 삭제
+        now_count[0]['date'].remove(str(date_receive))
+        # date_list.remove(date_receive)
+        db.date.update_one({'year_month': year_month}, {'$set': {'date': now_count[0]['date']}})
+        print('삭제',now_count[0]['date'])
+        return jsonify({'result': 'success', 'ans': 0, "count": len(now_count[0]['date'])})
+    else:
+        now_count[0]['date'].append(date_receive) ## 없으면 추가
+        db.date.update_one({'year_month': year_month}, {'$set': {'date': now_count[0]['date']}})
+        print('추가', now_count[0]['date'])
+        return jsonify({'result': 'success', 'ans': 1, "count": len(now_count[0]['date'])})
+
+@app.route('/achieve', methods=['POST'])
+def get_date():
+    year_receive = request.form['year_give']
+    month_receive = request.form['month_give']
+    year_month = int(year_receive) * 100 + int(month_receive)
+    now_count = list(db.date.find({'year_month': year_month}, {'_id': False}))
+    # print(len(now_count[0]['date']))
+    achieve = len(now_count[0]['date'])
+    return jsonify({'result': 'success', "achieve": achieve})
+
+@app.route('/color', methods=['POST'])
+def get_color():
+    year_receive = request.form['year_give']
+    month_receive = request.form['month_give']
+    year_month = int(year_receive) * 100 + int(month_receive)
+    print(year_receive)
+    print(month_receive)
+    now_count = list(db.date.find({'year_month': year_month}, {'_id': False}))
+
+    color = now_count[0]['date']
+    print(now_count[0]['date'])
+    return jsonify({'result': 'success', "color": color})
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)

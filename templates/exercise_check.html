@@ -93,6 +93,8 @@
             drawCalendar();
             initDate();
             drawDays();
+            // cell_color();
+
 
             // $("#movePrevMonth").on("click", function () {
             //     movePrevMonth();
@@ -162,6 +164,7 @@
                     setTableHTML += '    <div class="cal-schedule"></div>';
                     setTableHTML += '</td>';
                     date_id++;
+
                 }
                 setTableHTML += '</tr>';
 
@@ -181,11 +184,15 @@
             month = today.getMonth() + 1;
             firstDay = new Date(year, month - 1, 1);
             lastDay = new Date(year, month, 0);
+            month_count = 0;
+            achieve_count = 0;
+            countpercent = 0;
         }
 
         //calendar 날짜표시
         function drawDays() {
 
+            // 현재 연도,월과 목표횟수 불러오는 ajax
             $.ajax({
                 type: "GET",
                 url: "/info",
@@ -197,109 +204,183 @@
 
                         year = all_info[all_info.length - 1]['year'];
                         month = all_info[all_info.length - 1]['month']
-                        let count = all_info[all_info.length - 1]['count']
-                        // 내가 달성한 목표횟수
-                        let achievecount = 7;
+                        month_count = all_info[all_info.length - 1]['count']
+                        let tempachieve = `이번달 목표 횟수 : ${month_count} 회`
+                        $('#purpose').text(tempachieve)
 
-                        let countpercent = achievecount / count * 100;
-                        countpercent = Math.round(countpercent);
+                        // 내가 달성한 목표횟수 불러오는 ajax
+                        $.ajax({
+                            type: "POST",
+                            url: "/achieve",
+                            data: {'year_give': year, 'month_give': month},
+                            success: function (response) {
+                                if (response["result"] == "success") {
 
-                        let tempyear = `<span id="cal_top_year">${year}년</span>`
-                        let tempmonth = `<span id="cal_top_month">${month}월</span>`
-                        // console.log('tempyear : ' + year)
 
-                        $("#cal_top_year").replaceWith(tempyear);
-                        $("#cal_top_month").replaceWith(tempmonth);
+                                    achieve_count = response['achieve']
 
-                        let tempcount = ` <div class="show-result" id="show-results">
-                                            <span id="show-per">${tempyear} ${tempmonth}의 목표 달성률은 ${countpercent}% 입니다.</span>
 
+                                    let tempyear = `<span id="cal_top_year">${year}년</span>`
+                                    let tempmonth = `<span id="cal_top_month">${month}월</span>`
+                                    // console.log('tempyear : ' + year)
+
+                                    $("#cal_top_year").replaceWith(tempyear);
+                                    $("#cal_top_month").replaceWith(tempmonth);
+                                    // console.log(month_count)
+                                    let tempachevie = `이번달 달성 횟수 : ${achieve_count} 회`
+                                    $('#achieve').text(tempachevie)
+
+
+                                    // 달성률 계산 식 : 달성횟수/목표횟수 * 100
+                                    countpercent = achieve_count / month_count * 100;
+                                    countpercent = Math.round(countpercent);
+
+                                    if (countpercent == 100) {
+                                        alert('이번달 달성률 100% !!!!!!!!!')
+
+                                    }
+
+
+                                    let tempcount = ` <div class="show-result" id="show-results">
+                                            <span id="show-per">${year}년 ${month}월의 목표 달성률은 ${countpercent}% 입니다.</span>
                                             <div class="progress">
                                                 <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${countpercent}%"
                                                      aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </div>`
 
-                        $('#show-results').replaceWith(tempcount);
+                                    $('#show-results').replaceWith(tempcount);
 
-                        firstDay = new Date(year, month - 1, 1);
-                        lastDay = new Date(year, month, 0);
-                        // console.log('firstDay_year : ' + year)
-                        for (var i = firstDay.getDay(); i < firstDay.getDay() + lastDay.getDate(); i++) {
-                            $tdDay.eq(i).text(++dayCount);
-                        }
-                        for (var i = 0; i < 42; i += 7) {
-                            $tdDay.eq(i).css("color", "red");
-                        }
-                        for (var i = 6; i < 42; i += 7) {
-                            $tdDay.eq(i).css("color", "blue");
-                        }
+
+                                    // 새고로침시 달력에 달성한 날짜들을 녹색으로 변경해서 보여줌
+                                    $.ajax({
+                                        type: "POST",
+                                        url: "/color",
+                                        data: {year_give: year, month_give: month},
+                                        success: function (response) { // 성공하면
+                                            if (response["result"] == "success") {
+
+                                                for (let k = 0; k < response['color'].length; k++) {
+
+                                                    response['color'][k] = Number(response['color'][k]);
+                                                    console.log(response['color'][k])
+                                                    for (let j = 1; j < 36; j++) {
+                                                        if (response['color'][k] == $('#' + j + '_text').text()) {
+                                                            // 내가 짰지만 이해가 안되는 부분....
+                                                            $('#' + j).css({'background-color': 'green'});
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    })
+
+
+                                    firstDay = new Date(year, month - 1, 1);
+                                    lastDay = new Date(year, month, 0);
+                                    // console.log('firstDay_year : ' + year)
+                                    for (var i = firstDay.getDay(); i < firstDay.getDay() + lastDay.getDate(); i++) {
+                                        $tdDay.eq(i).text(++dayCount);
+                                    }
+                                    for (var i = 0; i < 42; i += 7) {
+                                        $tdDay.eq(i).css("color", "red");
+                                    }
+                                    for (var i = 6; i < 42; i += 7) {
+                                        $tdDay.eq(i).css("color", "blue");
+
+                                    }
+
+                                }
+                            }
+                        })
                     }
                 }
             })
         }
 
+        // 달력에 날짜 클릭했을 때 실행되는 함수
         function click_date(date_id) {
             if ($('#' + date_id + '_text').text() == '') {
                 return;
             } else {
-                $('#' + date_id).css({'background-color': 'green'});
+                if (countpercent == 100) {
+                    $('#' + date_id).css({'background-color': 'white'});
+                    alert('이미 달성률을 초과했습니다.')
+                    countpercent = 0
+                    return
+                }else{
+                    $('#' + date_id).css({'background-color': 'green'});
+                }
 
-                console.log(date_id)
+
+
+
+                window.location.reload();
+
+
+                let date_id_text = $('#' + date_id + '_text').text()
+
+                // 달력 클릭했을 때 없으면 리스트에 추가 있으면 삭제
                 $.ajax({
                     type: "POST",
                     url: "/date",
-                    data: {year_give: year, month_give: month, date_give: date_id},
+                    data: {year_give: year, month_give: month, date_give: date_id_text},
                     success: function (response) { // 성공하면
                         if (response["result"] == "success") {
-                            // alert(response["msg"]);
+
+                            if (response['ans'] == 0) {
+                                $('#' + date_id).css({'background-color': 'white'});
+                                window.location.reload();
+
+                            }
 
                         }
                     }
                 })
                 // mongodb에 $('#'+date_id +'_text').text() 값을 해당 월에 저장, update
             }
+
         }
 
 
         //calendar 월 이동
-        function movePrevMonth() {
-            month--;
-            if (month <= 0) {
-                month = 12;
-                year--;
-            }
-            if (month < 10) {
-                month = String("0" + month);
-            }
+        // function movePrevMonth() {
+        //     month--;
+        //     if (month <= 0) {
+        //         month = 12;
+        //         year--;
+        //     }
+        //     if (month < 10) {
+        //         month = String("0" + month);
+        //     }
+        //
+        //     getNewInfo();
+        // }
+        //
+        // function moveNextMonth() {
+        //     month++;
+        //     if (month > 12) {
+        //         month = 1;
+        //         year++;
+        //     }
+        //     if (month < 10) {
+        //         month = String("0" + month);
+        //     }
+        //
+        //     getNewInfo();
+        // }
 
-            getNewInfo();
-        }
 
-        function moveNextMonth() {
-            month++;
-            if (month > 12) {
-                month = 1;
-                year++;
-            }
-            if (month < 10) {
-                month = String("0" + month);
-            }
-
-            getNewInfo();
-        }
-
-
-        function getNewInfo() {
-            for (var i = 0; i < 42; i++) {
-                $tdDay.eq(i).text("");
-            }
-            dayCount = 0;
-            firstDay = new Date(year, month - 1, 1);
-            lastDay = new Date(year, month, 0);
-
-            drawDays();
-        }
+        // function getNewInfo() {
+        //     for (var i = 0; i < 42; i++) {
+        //         $tdDay.eq(i).text("");
+        //     }
+        //     dayCount = 0;
+        //     firstDay = new Date(year, month - 1, 1);
+        //     lastDay = new Date(year, month, 0);
+        //
+        //     drawDays();
+        // }
 
     </script>
 
@@ -366,6 +447,10 @@
     <div id="cal_tab" class="cal">
     </div>
 
+    <div class="description">
+        <span id='purpose'>목표 횟수 :</span><br>
+        <span id="achieve">달성 횟수 :</span>
+    </div>
 
     <div class="show-result" id="show-results">
         <span id="show-per">2020년 4월의 목표 달성률은 100% 입니다.</span>
@@ -375,6 +460,7 @@
                  aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
     </div>
-
+</div>
 </body>
+
 </html>
