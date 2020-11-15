@@ -1,10 +1,208 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kr">
 <head>
-    <meta charset="UTF-8">
-    <title>Title_sparta</title>
+    <!-- Webpage Title -->
+    <title>함께하기</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+
+    <!-- 구글폰트 -->
+<!--    <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">-->
+
+    <script type="text/javascript">
+        function isCellPhone(p) {
+            let regExp = /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})[-][0-9]{3,4}[-][0-9]{4}$/;
+            return regExp.test(p);
+        }
+
+        function order() {
+            let name = $("#order-name").val();
+            let count = $("#order-count").val();
+            let address = $("#order-address").val();
+            let phone = $("#order-phone").val();
+
+            if (name == "") {
+                alert("이름을 입력해주세요")
+                $("#order-name").focus()
+                return
+            } else if (count == "") {
+                alert("수량을 입력해주세요")
+                $("#order-count").focus()
+                return
+            } else if (address == "") {
+                alert("주소를 입력해주세요")
+                $("#order-address").focus()
+                return
+            } else if (phone == "") {
+                alert("휴대폰번호를 입력해주세요")
+                $("#order-phone").focus()
+                return
+            } else if (!isCellPhone(phone)) {
+                alert("휴대폰번호 입력 형식이 틀립니다. \n 010-0000-0000으로 입력해주세요")
+                return
+            }
+
+            // 주문하기 API를 사용해 여기를 채워주세요
+            $.ajax({
+                type: "POST",
+                url: "/order",
+                data: {name_give: name, count_give: count, address_give: address, phone_give: phone},
+                success: function (response) { // 성공하면
+                    if (response["result"] == "success") {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    }
+                }
+            })
+
+        }
+
+        $(document).ready(function () {
+            $("#orders-box").html("");
+            showOrders();
+        });
+
+        function showOrders() {
+            // 주문 목록보기 API 를 사용해 여기를 채워주세요
+            $.ajax({
+                type: "GET",
+                url: "/order",
+                data: {},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        console.log(response['orders'])
+                        all_orders = response['orders']
+
+                        for (let i = 0; i < all_orders.length; i++) {
+                            let name = all_orders[i]['name']
+                            let count = all_orders[i]['count']
+                            let address = all_orders[i]['address']
+                            let phone = all_orders[i]['phone']
+
+                            makeOrderRow(name, count, address, phone)
+
+                        }
+
+
+                    }
+                }
+            })
+        }
+
+        function makeOrderRow(name, count, address, phone) {
+            let tempHtml = `<tr>\
+                                <td>${name}</td>
+                                <td>${count}</td>
+                                <td>${address}</td>
+                                <td>${phone}</td>
+                              </tr>`;
+
+            $("#orders-box").append(tempHtml);
+        }
+    </script>
+
+    <style type="text/css">
+        body {
+            background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQedZzOMdGnc_UHZ3li-1VJYJ1g89HjUagvOw&usqp=CAU");
+
+        }
+
+        h3{
+            margin: 50px auto;
+            width:  700px;
+        }
+
+        .wrap {
+            width: 600px;
+            margin: 100px auto;
+            /*margin-left: 400px;*/
+        }
+
+
+
+        .info {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .order {
+            text-align: center;
+        }
+
+        .orders {
+            margin-top: 100px;
+        }
+    </style>
 </head>
 <body>
-    seokyeong
+<div class="wrap">
+
+    <div class="info">
+        <span style="font-size: 50px">함께하고픈 지인과 운동하기!!!</span>
+
+        <h3>지인의 이름, 연락처, 함께 운동하고싶은 시간을 입력하면<br>해당시간에 지인에게 카카오톡 메세지가 갑니다</h3>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">이름</span>
+            </div>
+            <input type="text" class="form-control" id="order-name">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">연락처</span>
+            </div>
+            <input type="text" class="form-control" id="order-phone">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">시간</span>
+            </div>
+            <input type="text" class="form-control" id="order-address">
+        </div>
+
+
+        <div class="order">
+            <button onclick="order()" type="button" class="btn btn-primary">저장</button>
+        </div>
+    </div>
+
+    <div class="orders">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">이름</th>
+                <th scope="col">연락처</th>
+                <th scope="col">시간</th>
+
+            </tr>
+            </thead>
+            <tbody id="orders-box">
+            <tr>
+                <td>박르탄</td>
+                <td>3</td>
+                <td>스파르타국 코딩시 프론트구</td>
+                <td>010-1234-5678</td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
 </body>
 </html>

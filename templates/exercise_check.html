@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kr">
 <head>
     <meta charset="UTF-8">
     <title>운동계획 및 달성률 체크</title>
@@ -23,6 +23,11 @@
 
 
     <style>
+
+        body {
+            background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQedZzOMdGnc_UHZ3li-1VJYJ1g89HjUagvOw&usqp=CAU");
+
+        }
 
         .wrap {
             margin-left: 30px;
@@ -61,7 +66,7 @@
 
         table.calendar td {
             vertical-align: top;
-            border: 3px solid skyblue;
+            border: 3px solid black;
 
             width: 150px;
         }
@@ -205,9 +210,10 @@
                         year = all_info[all_info.length - 1]['year'];
                         month = all_info[all_info.length - 1]['month']
                         month_count = all_info[all_info.length - 1]['count']
+                        console.log(month_count)
+
                         let tempachieve = `이번달 목표 횟수 : ${month_count} 회`
                         $('#purpose').text(tempachieve)
-
                         // 내가 달성한 목표횟수 불러오는 ajax
                         $.ajax({
                             type: "POST",
@@ -227,19 +233,46 @@
                                     $("#cal_top_year").replaceWith(tempyear);
                                     $("#cal_top_month").replaceWith(tempmonth);
                                     // console.log(month_count)
-                                    let tempachevie = `이번달 달성 횟수 : ${achieve_count} 회`
-                                    $('#achieve').text(tempachevie)
 
 
                                     // 달성률 계산 식 : 달성횟수/목표횟수 * 100
                                     countpercent = achieve_count / month_count * 100;
                                     countpercent = Math.round(countpercent);
 
-                                    if (countpercent == 100) {
+                                    if (achieve_count == month_count) {
                                         alert('이번달 달성률 100% !!!!!!!!!')
+                                        month_count = 0;
+                                        // achieve_count = 0;
+                                        date_id_text = 1000;
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "/date",
+                                            data: {year_give: year, month_give: month, date_give: date_id_text},
+                                            success: function (response) { // 성공하면
+                                                if (response["result"] == "success") {
+                                                    // console.log(response)
+                                                    console.log(response['ans'])
+                                                    countpercent = response['ans'];
+                                                    let tempachevie = `이번달 달성 횟수 : 0 회`
+                                                    $('#achieve').text(tempachevie)
+                                                    let tempcount = ` <div class="show-result" id="show-results">
+                                                            <span id="show-per">${year}년 ${month}월의 목표 달성률은 ${countpercent}% 입니다.</span>
+                                                            <div class="progress">
+                                                                <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${countpercent}%"
+                                                                     aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                                            </div>
+                                                        </div>`
 
+                                                    $('#show-results').replaceWith(tempcount);
+                                                    window.location.reload();
+
+                                                }
+                                            }
+                                        })
                                     }
 
+                                    let tempachevie = `이번달 달성 횟수 : ${achieve_count} 회`
+                                    $('#achieve').text(tempachevie)
 
                                     let tempcount = ` <div class="show-result" id="show-results">
                                             <span id="show-per">${year}년 ${month}월의 목표 달성률은 ${countpercent}% 입니다.</span>
@@ -263,7 +296,7 @@
                                                 for (let k = 0; k < response['color'].length; k++) {
 
                                                     response['color'][k] = Number(response['color'][k]);
-                                                    console.log(response['color'][k])
+                                                    // console.log(response['color'][k])
                                                     for (let j = 1; j < 36; j++) {
                                                         if (response['color'][k] == $('#' + j + '_text').text()) {
                                                             // 내가 짰지만 이해가 안되는 부분....
@@ -287,10 +320,10 @@
                                     }
                                     for (var i = 6; i < 42; i += 7) {
                                         $tdDay.eq(i).css("color", "blue");
-
                                     }
-
                                 }
+
+
                             }
                         })
                     }
@@ -302,21 +335,14 @@
         function click_date(date_id) {
             if ($('#' + date_id + '_text').text() == '') {
                 return;
-            } else {
-                if (countpercent == 100) {
-                    $('#' + date_id).css({'background-color': 'white'});
-                    alert('이미 달성률을 초과했습니다.')
-                    countpercent = 0
-                    return
-                }else{
-                    $('#' + date_id).css({'background-color': 'green'});
-                }
+            }
+                // else if{
+                //
+            // }
+            else {
 
-
-
-
+                $('#' + date_id).css({'background-color': 'green'});
                 window.location.reload();
-
 
                 let date_id_text = $('#' + date_id + '_text').text()
 
@@ -341,46 +367,6 @@
             }
 
         }
-
-
-        //calendar 월 이동
-        // function movePrevMonth() {
-        //     month--;
-        //     if (month <= 0) {
-        //         month = 12;
-        //         year--;
-        //     }
-        //     if (month < 10) {
-        //         month = String("0" + month);
-        //     }
-        //
-        //     getNewInfo();
-        // }
-        //
-        // function moveNextMonth() {
-        //     month++;
-        //     if (month > 12) {
-        //         month = 1;
-        //         year++;
-        //     }
-        //     if (month < 10) {
-        //         month = String("0" + month);
-        //     }
-        //
-        //     getNewInfo();
-        // }
-
-
-        // function getNewInfo() {
-        //     for (var i = 0; i < 42; i++) {
-        //         $tdDay.eq(i).text("");
-        //     }
-        //     dayCount = 0;
-        //     firstDay = new Date(year, month - 1, 1);
-        //     lastDay = new Date(year, month, 0);
-        //
-        //     drawDays();
-        // }
 
     </script>
 
@@ -448,8 +434,8 @@
     </div>
 
     <div class="description">
-        <span id='purpose'>목표 횟수 :</span><br>
-        <span id="achieve">달성 횟수 :</span>
+        <span id='purpose' style="margin-left: 555px">목표 횟수 :</span><br>
+        <span id="achieve" style="margin-left: 555px">달성 횟수 :</span>
     </div>
 
     <div class="show-result" id="show-results">

@@ -164,7 +164,7 @@
             let lunch = $('#lunch').val()
             let dinner = $('#dinner').val()
 
-            if (breakfast == "" || lunch == " " || dinner == "") {
+            if (breakfast == "" && lunch == " " && dinner == "") {
                 alert('메뉴를 입력해주세요!')
                 return;
             }
@@ -196,15 +196,15 @@
                         success: function (response) { // 성공하면
                             if (response["result"] == "success") {
                                     if (response['msg'] == 1){
-                                        alert('아침 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴 이름으로 입력해주세요.')
+                                        alert('아침 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴명으로 입력해주세요.')
                                         return;
                                     }
                                     else if (response['msg'] == 2){
-                                        alert('점심 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴 이름으로 입력해주세요.')
+                                        alert('점심 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴명으로 입력해주세요.')
                                         return;
                                     }
                                     else if (response['msg'] == 3){
-                                        alert('저녁 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴 이름으로 입력해주세요.')
+                                        alert('저녁 메뉴가 DB에없는 메뉴입니다.\n다른메뉴나 대표메뉴명으로 입력해주세요.')
                                         return;
                                     }
                                     // window.location.reload();
@@ -218,7 +218,7 @@
                                     if (total > resultCal) {
                                         result = '권장칼로리대비 ' + (total - resultCal) + 'cal 만큼 많습니다.<br/>운동하셔야 겠어요!'
                                     } else if (total < resultCal) {
-                                        result = '권장칼로리대비 ' + (resultCal - total) + 'cal 만큼 부족합니다.<br/>조금 더 섭취하세요.';
+                                        result = '권장칼로리대비 ' + (resultCal - total) + 'cal 만큼 부족합니다.<br/>조금 더 섭취하시면 좋을 것 같네요^^';
                                     } else {
                                         result = '권장칼로리 입니다.<br/>완벽합니다!!!'
                                     }
@@ -275,8 +275,8 @@
 
         <option selected>활동지수 선택</option>
         <option value="25">앉아서 주로 활동</option>
-        <option value="32">규칙적인 생활로 보통의 활동</option>
-        <option value="40">평소 신체 활동이 많은 경우</option>
+        <option value="31">규칙적인 생활로 보통의 활동</option>
+        <option value="37">평소 신체 활동이 많은 경우</option>
     </select>
     <div class="save-bt">
         <button type="button" class="btn btn-success">
