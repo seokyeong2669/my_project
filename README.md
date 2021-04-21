@@ -1,7 +1,7 @@
-# 프로젝트 이름  
+![food](https://user-images.githubusercontent.com/71132966/115495514-be894180-a2a2-11eb-921e-d8cccf1e50ce.jpg)
 ## 헬스 도우미(Health Manager)
 
-# Background]
+# Background
 날이갈수록 건강에 대한 관심은 점점 높아지지만 바쁜일상과 회식문화, 의지부족 등 여러 장애물로인해 제대로된 건강관리가 어려운 현실입니다. 저 역시 최근 관리에대한 중요성을 크게 느꼈지만 이러한 현실 앞에 행동으로 실천하기가 쉽지만은 않았는데요. 저와 같은 분들을 위해 보다 쉽고 체계적으로 운동스케쥴과 식단을 기록, 관리하고 스스로의 운동 의지도 고취시킬 수있는 프로그램을 만들면 좋겠다고 생각했습니다.
 
 # Functions
@@ -18,3 +18,8 @@
 HTML/JS/CSS, Python, mongoDB, Flask
 
 # 결과물
+https://user-images.githubusercontent.com/71132966/115497149-11b0c380-a2a6-11eb-8dd9-de5577af9165.mp4
+
+# 참고
+- 권장 칼로리 계산기 : https://m.blog.naver.com/shinhanlife1/221575192325
+- 식단별 칼로리 데이터 : https://www.dietshin.com/calorie/calorie_main.asp
